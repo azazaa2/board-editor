@@ -1,19 +1,22 @@
 <script setup>
-import AdminToolbar from './components/AdminToolbar.vue';
 import CanvasArea from './components/CanvasArea.vue';
 import ContextMenu from './components/ContextMenu.vue';
+import EngineerToolbar from './components/EngineerToolbar.vue';
+import LoginScreen from './components/LoginScreen.vue';
 import SidePanel from './components/SidePanel.vue';
 import StatusBar from './components/StatusBar.vue';
 import TopBar from './components/TopBar.vue';
 import { useBoardEditor } from './composables/useBoardEditor.js';
 
 const {
+  acknowledgeAll,
+  activeSensorKind,
   activeTool,
   activeToolLabel,
   autoSaveIn,
   canvasCursorClass,
-  clipboard,
   clearAll,
+  clipboard,
   clock,
   closeContextMenu,
   ctxAction,
@@ -23,22 +26,31 @@ const {
   duplicateSelected,
   fitToView,
   guardId,
+  isDuty,
+  isEngineer,
   loadDemo,
+  login,
+  logout,
   mouseX,
   mouseY,
   palette,
   resetView,
-  role,
   saveMap,
   selectShape,
   selectedId,
   selectedShape,
+  sensorTypes,
+  session,
   setContainer,
-  setRole,
+  setSensorKind,
   setTool,
+  setZoneStatus,
   shapes,
   shiftEnd,
   shiftStart,
+  stats,
+  statusInfo,
+  toggleZoneStatus,
   tools,
   updateShape,
   zoomIn,
@@ -48,29 +60,40 @@ const {
 </script>
 
 <template>
-  <div id="app" @click="closeContextMenu" @contextmenu.prevent>
-    <TopBar :clock="clock" :role="role" @set-role="setRole" />
+  <LoginScreen v-if="!session" @login="login" />
+
+  <div v-else id="app" @click="closeContextMenu" @contextmenu.prevent>
+    <TopBar
+      :clock="clock"
+      :session="session"
+      :stats="stats"
+      @logout="logout"
+    />
 
     <div class="main">
-      <AdminToolbar
-        v-if="role === 'admin'"
+      <EngineerToolbar
+        v-if="isEngineer"
+        :active-sensor-kind="activeSensorKind"
         :active-tool="activeTool"
         :has-selection="Boolean(selectedId)"
+        :sensor-types="sensorTypes"
         :tools="tools"
         @clear-all="clearAll"
         @delete-selected="deleteSelected"
         @duplicate-selected="duplicateSelected"
         @reset-view="resetView"
+        @set-sensor-kind="setSensorKind"
         @set-tool="setTool"
       />
 
       <CanvasArea
         :canvas-cursor-class="canvasCursorClass"
+        :is-duty="isDuty"
+        :is-engineer="isEngineer"
         :mouse-x="mouseX"
         :mouse-y="mouseY"
-        :role="role"
         :set-container="setContainer"
-        :shapes-count="shapes.length"
+        :stats="stats"
         :zoom-level="zoomLevel"
         @fit-to-view="fitToView"
         @reset-view="resetView"
@@ -80,17 +103,25 @@ const {
 
       <SidePanel
         :guard-id="guardId"
+        :is-duty="isDuty"
+        :is-engineer="isEngineer"
         :palette="palette"
-        :role="role"
         :selected-id="selectedId"
         :selected-shape="selectedShape"
+        :sensor-types="sensorTypes"
+        :session="session"
         :shapes="shapes"
         :shift-end="shiftEnd"
         :shift-start="shiftStart"
+        :stats="stats"
+        :status-info="statusInfo"
+        @acknowledge-all="acknowledgeAll"
         @delete-shape="deleteShape"
         @load-demo="loadDemo"
         @save-map="saveMap"
         @select-shape="selectShape"
+        @set-zone-status="setZoneStatus"
+        @toggle-zone-status="toggleZoneStatus"
         @update-shape="updateShape"
       />
     </div>
@@ -98,11 +129,18 @@ const {
     <StatusBar
       :active-tool-label="activeToolLabel"
       :auto-save-in="autoSaveIn"
-      :role="role"
-      :shapes-count="shapes.length"
+      :is-engineer="isEngineer"
+      :session="session"
+      :stats="stats"
       :zoom-level="zoomLevel"
     />
 
-    <ContextMenu :clipboard="clipboard" :ctx-menu="ctxMenu" @action="ctxAction" />
+    <ContextMenu
+      :clipboard="clipboard"
+      :ctx-menu="ctxMenu"
+      :is-duty="isDuty"
+      :is-engineer="isEngineer"
+      @action="ctxAction"
+    />
   </div>
 </template>

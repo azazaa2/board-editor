@@ -1,33 +1,13 @@
 <script setup>
 defineProps({
-  canvasCursorClass: {
-    type: String,
-    required: true,
-  },
-  mouseX: {
-    type: Number,
-    required: true,
-  },
-  mouseY: {
-    type: Number,
-    required: true,
-  },
-  role: {
-    type: String,
-    required: true,
-  },
-  setContainer: {
-    type: Function,
-    required: true,
-  },
-  shapesCount: {
-    type: Number,
-    required: true,
-  },
-  zoomLevel: {
-    type: Number,
-    required: true,
-  },
+  canvasCursorClass: { type: String, required: true },
+  isDuty: { type: Boolean, required: true },
+  isEngineer: { type: Boolean, required: true },
+  mouseX: { type: Number, required: true },
+  mouseY: { type: Number, required: true },
+  setContainer: { type: Function, required: true },
+  stats: { type: Object, required: true },
+  zoomLevel: { type: Number, required: true },
 });
 
 const emit = defineEmits(['fit-to-view', 'reset-view', 'zoom-in', 'zoom-out']);
@@ -37,10 +17,17 @@ const emit = defineEmits(['fit-to-view', 'reset-view', 'zoom-in', 'zoom-out']);
   <div class="canvas-area" :class="canvasCursorClass">
     <div class="canvas-overlay">
       <div class="badge badge-live">
-        {{ role === 'admin' ? 'РЕЖИМ РЕДАКТОРА' : 'ТРАНСЛЯЦИЯ' }}
+        <span v-if="isEngineer">РЕЖИМ РЕДАКТОРА</span>
+        <span v-else-if="isDuty">МОНИТОРИНГ · УПРАВЛЕНИЕ</span>
+        <span v-else>МОНИТОРИНГ · ПРОСМОТР</span>
       </div>
-      <div v-if="role === 'guard'" class="badge badge-readonly">ТОЛЬКО ПРОСМОТР</div>
-      <div class="badge">ОБЪЕКТОВ: {{ shapesCount }}</div>
+      <div v-if="!isEngineer" class="badge badge-readonly">
+        {{ isDuty ? 'КЛИК ПО ЗОНЕ - ПЕРЕКЛЮЧИТЬ СТАТУС' : 'ТОЛЬКО ПРОСМОТР' }}
+      </div>
+      <div class="badge">ЗОН: {{ stats.zones }} · ДАТЧИКОВ: {{ stats.sensors }}</div>
+      <div v-if="stats.alarms > 0" class="badge badge-alarm">
+        <span class="badge-pulse"></span>СРАБОТОК: {{ stats.alarms }}
+      </div>
     </div>
 
     <div id="konva-container" :ref="setContainer"></div>

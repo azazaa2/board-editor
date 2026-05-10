@@ -1,17 +1,10 @@
 <script setup>
 defineProps({
-  activeTool: {
-    type: String,
-    required: true,
-  },
-  hasSelection: {
-    type: Boolean,
-    required: true,
-  },
-  tools: {
-    type: Array,
-    required: true,
-  },
+  activeSensorKind: { type: String, required: true },
+  activeTool: { type: String, required: true },
+  hasSelection: { type: Boolean, required: true },
+  sensorTypes: { type: Array, required: true },
+  tools: { type: Array, required: true },
 });
 
 const emit = defineEmits([
@@ -19,6 +12,7 @@ const emit = defineEmits([
   'delete-selected',
   'duplicate-selected',
   'reset-view',
+  'set-sensor-kind',
   'set-tool',
 ]);
 </script>
@@ -73,5 +67,20 @@ const emit = defineEmits([
       </svg>
       <span class="tool-tooltip">Очистить всё</span>
     </button>
+
+    <div v-if="activeTool === 'sensor' || activeTool === 'zone-rect' || activeTool === 'zone-circle'" class="sensor-picker">
+      <div class="sensor-picker-title">Тип</div>
+      <button
+        v-for="kind in sensorTypes"
+        :key="kind.id"
+        class="sensor-picker-btn"
+        :class="{ active: activeSensorKind === kind.id }"
+        :style="{ '--sensor-color': kind.color }"
+        :title="kind.label"
+        @click="emit('set-sensor-kind', kind.id)"
+      >
+        {{ kind.symbol }}
+      </button>
+    </div>
   </div>
 </template>
